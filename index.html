@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coursera Rasch Model — Milliy Sertifikat Tahlili</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --ink:#0f1b2d; --indigo:#1e3a5f; --indigo-deep:#142844; --steel:#3d6098;
+    --amber:#e8943a; --amber-deep:#c8731a; --paper:#f7f6f2; --line:#dfe3e8;
+    --good:#2e9e6b; --warn:#e8943a; --bad:#d4524e;
+    --grid:#eceef1; --muted:#6b7a8d;
+    --aplus:#1a7a4a; --a:#2e9e6b; --bplus:#3d8bc4; --b:#5fa3d0; --cplus:#e8943a; --c:#d4843a;
+  }
+  body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--paper);color:var(--ink);line-height:1.55;font-size:14px}
+
+  /* ===== HEADER ===== */
+  .topbar{background:linear-gradient(110deg,var(--indigo-deep) 0%,var(--indigo) 55%,var(--steel) 100%);color:#fff;padding:0;position:relative;overflow:hidden}
+  .topbar-inner{max-width:1180px;margin:0 auto;padding:16px 22px;display:flex;justify-content:space-between;align-items:center;gap:16px;position:relative;z-index:2}
+  /* ruler motif */
+  .ruler{position:absolute;left:0;right:0;bottom:0;height:14px;display:flex;align-items:flex-end;opacity:0.25;z-index:1}
+  .ruler i{flex:1;border-left:1px solid #fff;height:5px}
+  .ruler i:nth-child(5n+1){height:11px}
+  .brand h1{font-size:19px;font-weight:700;letter-spacing:-0.2px;display:flex;align-items:center;gap:9px}
+  .brand .sub{font-size:12px;opacity:0.82;margin-top:3px}
+  .logo-box{background:#fff;border-radius:10px;padding:8px 12px;display:flex;flex-direction:column;align-items:center;gap:3px;box-shadow:0 3px 10px rgba(0,0,0,0.18);flex-shrink:0}
+  .logo-box img{height:38px;width:auto;display:block}
+  .logo-box span{font-size:9px;color:var(--indigo);font-weight:600;letter-spacing:0.3px}
+
+  /* ===== NAV ===== */
+  .nav{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
+  .nav-inner{max-width:1180px;margin:0 auto;padding:0 22px;display:flex;gap:2px;overflow-x:auto}
+  .nav button{background:none;border:none;padding:13px 16px;font-size:13.5px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2.5px solid transparent;white-space:nowrap;font-family:inherit;transition:all .15s}
+  .nav button.active{color:var(--indigo);border-bottom-color:var(--amber)}
+  .nav button:hover{color:var(--ink)}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:22px}
+  .view{display:none}
+  .view.active{display:block}
+
+  .eyebrow{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--amber-deep);margin-bottom:6px}
+  h2.title{font-size:22px;font-weight:700;color:var(--ink);margin-bottom:6px;letter-spacing:-0.3px}
+  .lead{font-size:13.5px;color:var(--muted);margin-bottom:20px;max-width:720px}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px;margin-bottom:16px}
+  .card h3{font-size:15px;font-weight:700;color:var(--indigo);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+
+  .btn{padding:10px 20px;border-radius:8px;border:none;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+  .btn-primary{background:var(--indigo);color:#fff}
+  .btn-primary:hover{background:var(--indigo-deep)}
+  .btn-amber{background:var(--amber);color:#fff}
+  .btn-amber:hover{background:var(--amber-deep)}
+  .btn-ghost{background:#fff;color:var(--indigo);border:1.5px solid var(--line)}
+  .btn-ghost:hover{border-color:var(--steel);color:var(--indigo-deep)}
+  .btn-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+  /* ===== DATA GRID ===== */
+  .grid-tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  .grid-tools label{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+  .grid-tools input[type=number]{width:60px;padding:6px 8px;border:1.5px solid var(--line);border-radius:6px;font-size:13px;font-family:inherit}
+  .matrix-scroll{overflow:auto;max-height:62vh;border:1px solid var(--line);border-radius:10px;background:#fff}
+  table.matrix{border-collapse:collapse;font-size:12.5px;width:max-content;min-width:100%}
+  table.matrix th,table.matrix td{border:1px solid var(--grid);padding:0;text-align:center}
+  table.matrix thead th{position:sticky;top:0;background:var(--indigo);color:#fff;z-index:3;padding:7px 9px;font-weight:600;font-size:11.5px;min-width:46px}
+  table.matrix thead th.corner{position:sticky;left:0;z-index:5;background:var(--indigo-deep);min-width:130px;text-align:left;padding-left:12px}
+  table.matrix tbody th.namecol{position:sticky;left:0;background:#f1f4f8;z-index:2;text-align:left;padding:4px 10px;font-weight:500;min-width:130px;border-right:2px solid var(--line)}
+  table.matrix tbody th.namecol input{border:none;background:transparent;font-size:12.5px;width:118px;font-family:inherit;color:var(--ink)}
+  table.matrix tbody th.namecol input:focus{outline:1px solid var(--steel);border-radius:3px}
+  .cell{width:46px;height:34px;border:none;text-align:center;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;background:#fff;color:var(--ink)}
+  .cell.v1{background:#e3f3ea;color:var(--good)}
+  .cell.v0{background:#fbeceb;color:var(--bad)}
+  .cell:focus{outline:2px solid var(--steel);position:relative;z-index:1}
+  th.itemhead{cursor:pointer}
+  th.itemhead input{border:none;background:transparent;color:#fff;width:38px;text-align:center;font-size:11px;font-family:inherit;font-weight:600}
+  th.itemhead input:focus{outline:1px solid #fff;border-radius:3px}
+  .rowdel{cursor:pointer;color:#fff;opacity:.6;font-size:11px;padding:0 4px}
+  .rowdel:hover{opacity:1}
+
+  .hint{font-size:12px;color:var(--muted);background:#f1f4f8;border-radius:8px;padding:10px 13px;margin-top:12px;border-left:3px solid var(--steel)}
+  .hint b{color:var(--indigo)}
+
+  /* ===== RESULTS ===== */
+  .stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
+  .stat-box{background:#fff;border:1px solid var(--line);border-radius:11px;padding:15px 16px;position:relative;overflow:hidden}
+  .stat-box::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--amber)}
+  .stat-box .n{font-size:25px;font-weight:800;color:var(--indigo);letter-spacing:-0.5px}
+  .stat-box .l{font-size:11px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:0.5px}
+
+  table.results{border-collapse:collapse;width:100%;font-size:13px;background:#fff;border-radius:10px;overflow:hidden}
+  table.results th{background:var(--indigo);color:#fff;padding:10px 12px;text-align:left;font-size:12px;font-weight:600;position:sticky;top:0}
+  table.results td{padding:9px 12px;border-bottom:1px solid var(--grid)}
+  table.results tbody tr:hover{background:#f7f9fb}
+  .badge{display:inline-block;padding:3px 11px;border-radius:20px;font-size:12px;font-weight:700;color:#fff;min-width:38px;text-align:center}
+  .g-Ap{background:var(--aplus)} .g-A{background:var(--a)} .g-Bp{background:var(--bplus)}
+  .g-B{background:var(--b)} .g-Cp{background:var(--cplus)} .g-C{background:var(--c)} .g-none{background:#9aa6b2}
+  .results-wrap{overflow:auto;max-height:65vh;border:1px solid var(--line);border-radius:10px}
+  .num{font-variant-numeric:tabular-nums;text-align:right}
+
+  .fitflag{font-size:11px;padding:2px 7px;border-radius:5px;font-weight:600}
+  .fit-ok{background:#e3f3ea;color:var(--good)} .fit-hi{background:#fbeceb;color:var(--bad)} .fit-lo{background:#fff4e3;color:var(--amber-deep)}
+
+  /* ===== WRIGHT MAP ===== */
+  .wright{display:flex;gap:0;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;min-height:420px}
+  .wright-col{flex:1;padding:14px;position:relative}
+  .wright-col.persons{background:linear-gradient(180deg,#f7f9fb,#fff)}
+  .wright-col.items{background:linear-gradient(180deg,#fdf8f2,#fff);border-left:2px solid var(--line)}
+  .wright-head{text-align:center;font-size:12px;font-weight:700;color:var(--indigo);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px}
+  .wright-axis{position:absolute;left:50%;top:44px;bottom:14px;width:1px;background:var(--line)}
+  .wdot{position:absolute;transform:transl(-50%,-50%);font-size:10px;padding:1px 6px;border-radius:9px;white-space:nowrap}
+  .wdot.p{background:var(--steel);color:#fff;right:8px}
+  .wdot.i{background:var(--amber);color:#fff;left:8px}
+  .scale-mark{position:absolute;left:0;right:0;border-top:1px dashed #e0e4e9;font-size:9px;color:var(--muted);padding-left:2px}
+
+  /* charts */
+  .bar-chart{display:flex;flex-direction:column;gap:7px}
+  .bar-item{display:flex;align-items:center;gap:9px}
+  .bar-label{width:50px;font-size:11.5px;color:var(--muted);text-align:right;flex-shrink:0}
+  .bar-track{flex:1;background:#eef1f4;border-radius:5px;height:22px;position:relative;overflow:hidden}
+  .bar-fill{height:100%;border-radius:5px;display:flex;align-items:center;padding-left:8px;color:#fff;font-size:11px;font-weight:600;transition:width .5s}
+  .dist-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;text-align:center}
+  .dist-cell{padding:12px 6px;border-radius:10px;color:#fff}
+  .dist-cell .dn{font-size:22px;font-weight:800}
+  .dist-cell .dl{font-size:11px;opacity:.92}
+
+  /* learn cards */
+  .learn-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px;margin-bottom:14px}
+  .learn-card h3{color:var(--indigo);font-size:15px;margin-bottom:10px}
+  .formula{background:var(--indigo-deep);color:#fff;padding:14px 18px;border-radius:10px;font-size:15px;text-align:center;margin:12px 0;font-family:'Cambria','Georgia',serif;letter-spacing:0.3px}
+  .formula .small{font-size:12px;opacity:.8}
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13px;margin-top:10px}
+  .kv dt{font-weight:700;color:var(--amber-deep)}
+  .step-flow{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+  .step{display:flex;gap:12px;align-items:flex-start;padding:11px 14px;background:#f7f9fb;border-radius:9px;border-left:3px solid var(--steel)}
+  .step .sn{background:var(--indigo);color:#fff;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+  .step .st{font-size:13px}
+  .step .st b{color:var(--indigo)}
+  .gradetable{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+  .gradetable th{background:var(--indigo);color:#fff;padding:8px 10px;text-align:left}
+  .gradetable td{padding:8px 10px;border-bottom:1px solid var(--grid)}
+  .note-amber{background:#fdf4e8;border:1px solid #f0d9b8;border-left:3px solid var(--amber);border-radius:8px;padding:12px 14px;font-size:12.5px;color:#7a5320;margin-top:12px}
+
+  .settings-row{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end;margin-bottom:8px}
+  .field{display:flex;flex-direction:column;gap:4px}
+  .field label{font-size:12px;color:var(--muted);font-weight:600}
+  .field input[type=range]{width:180px}
+  .field .val{font-size:13px;font-weight:700;color:var(--indigo)}
+  .empty-state{text-align:center;padding:50px 20px;color:var(--muted)}
+  .empty-state .ico{font-size:42px;margin-bottom:12px;opacity:.5}
+
+  .footer{text-align:center;padding:28px;color:var(--muted);font-size:12px;border-top:1px solid var(--line);margin-top:20px}
+  @media(max-width:640px){
+    .wright{flex-direction:column}
+    .dist-grid{grid-template-columns:repeat(3,1fr)}
+    .brand h1{font-size:15px}
+  }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <h1>📐 Coursera Rasch Model</h1>
+      <div class="sub">Milliy sertifikat uslubida test natijalarini tahlil qilish — JMLE metodikasi</div>
+    </div>
+    <div class="logo-box">
+      <img src="data:image/png;base64,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" alt="Coursera">
+      <span>O'QUV MARKAZI</span>
+    </div>
+  </div>
+  <div class="ruler" id="ruler"></div>
+</div>
+
+<div class="nav">
+  <div class="nav-inner">
+    <button class="active" onclick="nav('data',this)">📋 Ma'lumot kiritish</button>
+    <button onclick="nav('results',this)">🎯 Natijalar</button>
+    <button onclick="nav('items',this)">🔍 Savollar tahlili</button>
+    <button onclick="nav('wright',this)">🗺️ Wright xaritasi</button>
+    <button onclick="nav('learn',this)">📖 Metodika</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- ============ DATA ============ -->
+  <div id="data" class="view active">
+    <div class="eyebrow">Bosqich 1</div>
+    <h2 class="title">Test natijalarini kiriting</h2>
+    <p class="lead">Har bir o'quvchining har bir savolga bergan javobini belgilang: <b>1</b> — to'g'ri, <b>0</b> — xato. Katakni bosib almashtiring yoki klaviaturadan 1/0 tering. Bo'sh katak — javob berilmagan (e'tiborga olinmaydi).</p>
+
+    <div class="card">
+      <div class="grid-tools">
+        <label>O'quvchilar: <input type="number" id="nP" min="1" max="300" value="10"></label>
+        <label>Savollar: <input type="number" id="nI" min="1" max="120" value="12"></label>
+        <button class="btn btn-ghost" onclick="resizeMatrix()">↻ Jadvalni yangilash</button>
+        <span style="flex:1"></span>
+        <button class="btn btn-ghost" onclick="loadSample()">📝 Namuna yuklash</button>
+        <button class="btn btn-ghost" onclick="clearMatrix()">🗑️ Tozalash</button>
+      </div>
+      <div class="matrix-scroll">
+        <table class="matrix" id="matrix"></table>
+      </div>
+      <div class="hint">
+        💡 <b>Maslahat:</b> Katakda turib <b>1</b> yoki <b>0</b> tugmasini bossangiz, avtomatik keyingi katakka o'tadi. Strelka tugmalari bilan ham harakatlanish mumkin. O'quvchi va savol nomlarini o'zgartirsangiz bo'ladi.
+      </div>
+      <div class="btn-row" style="margin-top:16px">
+        <button class="btn btn-amber" onclick="runAnalysis()">⚡ Tahlil qilish</button>
+        <button class="btn btn-ghost" onclick="exportCSV()">⬇️ CSV yuklab olish</button>
+        <label class="btn btn-ghost" style="cursor:pointer">⬆️ CSV import
+          <input type="file" id="csvFile" accept=".csv" style="display:none" onchange="importCSV(event)">
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ RESULTS ============ -->
+  <div id="results" class="view">
+    <div class="eyebrow">Bosqich 2</div>
+    <h2 class="title">O'quvchilar natijalari</h2>
+    <p class="lead">Har bir o'quvchining qobiliyati (logit), 100 ballik shkaladagi bali va Milliy sertifikat darajasi. Qiyin savollarga to'g'ri javob ko'proq qadrlanadi.</p>
+
+    <div class="card" style="padding:16px 18px">
+      <div class="settings-row">
+        <div class="field">
+          <label>Shkala koeffitsienti (K)</label>
+          <input type="range" id="scaleK" min="5" max="15" step="0.5" value="9.5" oninput="updateScale()">
+          <span class="val" id="scaleKval">9.5</span>
+        </div>
+        <div class="field">
+          <label>Markaz bali (0 logit)</label>
+          <input type="range" id="scaleC" min="40" max="60" step="1" value="50" oninput="updateScale()">
+          <span class="val" id="scaleCval">50</span>
+        </div>
+        <div style="font-size:12px;color:var(--muted);max-width:340px">
+          ⚙️ Ushbu sozlamalar logit qiymatni ballga aylantiradi. Ustozda real Milliy sertifikat natijalari bo'lsa, shularga moslab kalibrlash mumkin.
+        </div>
+      </div>
+    </div>
+
+    <div id="resultsContent"></div>
+  </div>
+
+  <!-- ============ ITEMS ============ -->
+  <div id="items" class="view">
+    <div class="eyebrow">Diagnostika</div>
+    <h2 class="title">Savollar tahlili</h2>
+    <p class="lead">Har bir savolning qiyinlik darajasi (logit) va sifat ko'rsatkichlari. Infit/Outfit 0.7–1.3 oralig'ida bo'lishi yaxshi hisoblanadi — bu chegaradan tashqari savollar qayta ko'rib chiqilishi kerak.</p>
+    <div id="itemsContent"></div>
+  </div>
+
+  <!-- ============ WRIGHT ============ -->
+  <div id="wright" class="view">
+    <div class="eyebrow">Vizual</div>
+    <h2 class="title">Wright xaritasi (Person–Item Map)</h2>
+    <p class="lead">O'quvchilar qobiliyati va savollar qiyinligi bitta logit shkalasida. Yuqorida — kuchli o'quvchilar va qiyin savollar; pastda — kuchsizlar va oson savollar. Bu Rasch modelining eng kuchli tomoni.</p>
+    <div id="wrightContent"></div>
+  </div>
+
+  <!-- ============ LEARN ============ -->
+  <div id="learn" class="view">
+    <div class="eyebrow">Bilib oling</div>
+    <h2 class="title">Rasch modeli metodikasi</h2>
+    <p class="lead">Milliy sertifikat imtihonlarida qo'llaniladigan xalqaro baholash usuli qanday ishlashini tushuning.</p>
+    <div id="learnContent"></div>
+  </div>
+
+</div>
+
+<div class="footer">
+  📐 Coursera Rasch Model · Milliy sertifikat uslubidagi o'quv-tahlil vositasi · JMLE algoritmi asosida
+</div>
+
+<script>
+// ============================================================
+// COURSERA RASCH MODEL — Hisoblash yadrosi (JMLE)
+// O'zbekiston Milliy sertifikat metodikasiga asoslangan
+// ============================================================
+
+const RaschEngine = (function () {
+
+  function Pr(theta, b) {
+    const z = theta - b;
+    if (z > 30) return 1.0;
+    if (z < -30) return 0.0;
+    const e = Math.exp(z);
+    return e / (1 + e);
+  }
+
+  // R: 2D array [person][item] of 1/0/null. Returns full analysis.
+  function analyze(R, opts) {
+    opts = opts || {};
+    const P = R.length;
+    const I = R[0].length;
+    const resp = x => x !== null && x !== undefined && x !== "";
+
+    const pscore = R.map(row => row.reduce((s, x) => s + (resp(x) ? +x : 0), 0));
+    const pcount = R.map(row => row.reduce((s, x) => s + (resp(x) ? 1 : 0), 0));
+    const iscore = [], icount = [];
+    for (let i = 0; i < I; i++) {
+      let s = 0, c = 0;
+      for (let p = 0; p < P; p++) if (resp(R[p][i])) { s += +R[p][i]; c++; }
+      iscore.push(s); icount.push(c);
+    }
+
+    let theta = new Array(P).fill(0);
+    let b = new Array(I).fill(0);
+
+    // Starting values with extreme correction (0.3 like Winsteps)
+    for (let p = 0; p < P; p++) {
+      if (pcount[p] > 0) {
+        let s = pscore[p];
+        if (s === 0) s = 0.3; else if (s === pcount[p]) s = pcount[p] - 0.3;
+        const f = s / pcount[p];
+        theta[p] = Math.log(f / (1 - f));
+      }
+    }
+    for (let i = 0; i < I; i++) {
+      if (icount[i] > 0) {
+        let s = iscore[i];
+        if (s === 0) s = 0.3; else if (s === icount[i]) s = icount[i] - 0.3;
+        const f = s / icount[i];
+        b[i] = Math.log((1 - f) / f);
+      }
+    }
+
+    const maxIter = 300, tol = 1e-5;
+    let iters = 0;
+    for (let it = 0; it < maxIter; it++) {
+      iters = it + 1;
+      let mc = 0;
+      // persons
+      for (let p = 0; p < P; p++) {
+        if (pcount[p] === 0) continue;
+        let exp = 0, info = 0;
+        for (let i = 0; i < I; i++) {
+          if (!resp(R[p][i])) continue;
+          const pr = Pr(theta[p], b[i]); exp += pr; info += pr * (1 - pr);
+        }
+        if (info < 1e-9) info = 1e-9;
+        let sc = pscore[p];
+        if (sc === 0) sc = 0.3; else if (sc === pcount[p]) sc = pcount[p] - 0.3;
+        let ch = (sc - exp) / info;
+        ch = Math.max(Math.min(ch, 2), -2);
+        theta[p] += ch; mc = Math.max(mc, Math.abs(ch));
+      }
+      // items
+      for (let i = 0; i < I; i++) {
+        if (icount[i] === 0) continue;
+        let exp = 0, info = 0;
+        for (let p = 0; p < P; p++) {
+          if (!resp(R[p][i])) continue;
+          const pr = Pr(theta[p], b[i]); exp += pr; info += pr * (1 - pr);
+        }
+        if (info < 1e-9) info = 1e-9;
+        let sc = iscore[i];
+        if (sc === 0) sc = 0.3; else if (sc === icount[i]) sc = icount[i] - 0.3;
+        let ch = -(sc - exp) / info;
+        ch = Math.max(Math.min(ch, 2), -2);
+        b[i] += ch; mc = Math.max(mc, Math.abs(ch));
+      }
+      // center items (identifiability)
+      const meanB = b.reduce((a, c) => a + c, 0) / I;
+      for (let i = 0; i < I; i++) b[i] -= meanB;
+      for (let p = 0; p < P; p++) theta[p] -= meanB;
+      if (mc < tol) break;
+    }
+
+    // Standard errors
+    const pSE = [], iSE = [];
+    for (let p = 0; p < P; p++) {
+      let info = 0;
+      for (let i = 0; i < I; i++) { if (!resp(R[p][i])) continue; const pr = Pr(theta[p], b[i]); info += pr * (1 - pr); }
+      pSE.push(info > 0 ? 1 / Math.sqrt(info) : 0);
+    }
+    for (let i = 0; i < I; i++) {
+      let info = 0;
+      for (let p = 0; p < P; p++) { if (!resp(R[p][i])) continue; const pr = Pr(theta[p], b[i]); info += pr * (1 - pr); }
+      iSE.push(info > 0 ? 1 / Math.sqrt(info) : 0);
+    }
+
+    // Fit statistics (infit/outfit) for items and persons
+    function fitFor(isItem) {
+      const n = isItem ? I : P;
+      const res = [];
+      for (let k = 0; k < n; k++) {
+        let numO = 0, denO = 0, numI = 0, denI = 0;
+        const m = isItem ? P : I;
+        for (let j = 0; j < m; j++) {
+          const x = isItem ? R[j][k] : R[k][j];
+          if (!resp(x)) continue;
+          const th = isItem ? theta[j] : theta[k];
+          const bb = isItem ? b[k] : b[j];
+          const pr = Pr(th, bb); const v = pr * (1 - pr);
+          if (v < 1e-9) continue;
+          const z2 = ((+x - pr) ** 2) / v;
+          numO += z2; denO += 1;
+          numI += (+x - pr) ** 2; denI += v;
+        }
+        res.push({ outfit: denO ? numO / denO : 1, infit: denI ? numI / denI : 1 });
+      }
+      return res;
+    }
+    const itemFit = fitFor(true);
+    const personFit = fitFor(false);
+
+    // Reliability (person separation reliability, KR-20-like via logit SE)
+    function reliability(measures, SEs) {
+      const n = measures.length;
+      const mean = measures.reduce((a, c) => a + c, 0) / n;
+      const obsVar = measures.reduce((a, c) => a + (c - mean) ** 2, 0) / n;
+      const errVar = SEs.reduce((a, c) => a + c * c, 0) / n;
+      const trueVar = Math.max(obsVar - errVar, 0);
+      return obsVar > 0 ? trueVar / obsVar : 0;
+    }
+    const personRel = reliability(theta, pSE);
+    const itemRel = reliability(b, iSE);
+
+    return {
+      P, I, theta, b, pscore, pcount, iscore, icount,
+      pSE, iSE, itemFit, personFit, personRel, itemRel, iters
+    };
+  }
+
+  return { analyze, Pr };
+})();
+
+if (typeof module !== "undefined") module.exports = RaschEngine;
+
+</script>
+<script>
+// ============================================================
+// RENDER — natijalar, savollar, wright xaritasi, metodika
+// ============================================================
+
+function renderResults(){
+  if(!lastResult) return;
+  const r = lastResult;
+  const rows = [];
+  for(let p=0;p<r.P;p++){
+    const ball = logitToBall(r.theta[p]);
+    const [g,gc] = gradeOf(ball);
+    rows.push({p, name:personNames[p]||('O\'quvchi '+(p+1)),
+      raw:r.pscore[p], cnt:r.pcount[p], theta:r.theta[p], se:r.pSE[p], ball, g, gc,
+      infit:r.personFit[p].infit, outfit:r.personFit[p].outfit});
+  }
+  rows.sort((a,b)=>b.ball-a.ball);
+
+  // distribution
+  const dist={"A+":0,"A":0,"B+":0,"B":0,"C+":0,"C":0,"—":0};
+  rows.forEach(x=>dist[x.g]++);
+  const passed = rows.filter(x=>x.g!=="—").length;
+  const avgBall = (rows.reduce((s,x)=>s+x.ball,0)/rows.length).toFixed(1);
+
+  let html = `
+  <div class="stat-row">
+    <div class="stat-box"><div class="n">${r.P}</div><div class="l">O'quvchi</div></div>
+    <div class="stat-box"><div class="n">${r.I}</div><div class="l">Savol</div></div>
+    <div class="stat-box"><div class="n">${avgBall}</div><div class="l">O'rtacha ball</div></div>
+    <div class="stat-box"><div class="n">${passed}/${r.P}</div><div class="l">Sertifikat oldi</div></div>
+    <div class="stat-box"><div class="n">${(r.personRel).toFixed(2)}</div><div class="l">Ishonchlilik</div></div>
+  </div>
+
+  <div class="card">
+    <h3>📊 Daraja taqsimoti</h3>
+    <div class="dist-grid">
+      <div class="dist-cell" style="background:var(--aplus)"><div class="dn">${dist["A+"]}</div><div class="dl">A+</div></div>
+      <div class="dist-cell" style="background:var(--a)"><div class="dn">${dist["A"]}</div><div class="dl">A</div></div>
+      <div class="dist-cell" style="background:var(--bplus)"><div class="dn">${dist["B+"]}</div><div class="dl">B+</div></div>
+      <div class="dist-cell" style="background:var(--b)"><div class="dn">${dist["B"]}</div><div class="dl">B</div></div>
+      <div class="dist-cell" style="background:var(--cplus)"><div class="dn">${dist["C+"]}</div><div class="dl">C+</div></div>
+      <div class="dist-cell" style="background:var(--c)"><div class="dn">${dist["C"]}</div><div class="dl">C</div></div>
+    </div>
+  </div>
+
+  <div class="card" style="padding:0;overflow:hidden">
+    <div class="results-wrap">
+    <table class="results">
+      <thead><tr>
+        <th>#</th><th>O'quvchi</th><th>To'g'ri</th><th>Qobiliyat (logit)</th>
+        <th>Ball</th><th>Daraja</th><th>Infit</th><th>Outfit</th>
+      </tr></thead><tbody>`;
+  rows.forEach((x,idx)=>{
+    html += `<tr>
+      <td class="num">${idx+1}</td>
+      <td>${x.name}</td>
+      <td class="num">${x.raw}/${x.cnt}</td>
+      <td class="num">${x.theta>=0?'+':''}${x.theta.toFixed(2)} <span style="color:var(--muted);font-size:11px">±${x.se.toFixed(2)}</span></td>
+      <td class="num"><b>${x.ball.toFixed(1)}</b></td>
+      <td><span class="badge ${x.gc}">${x.g}</span></td>
+      <td class="num">${fitTag(x.infit)}</td>
+      <td class="num">${fitTag(x.outfit)}</td>
+    </tr>`;
+  });
+  html += `</tbody></table></div></div>
+  <div class="btn-row"><button class="btn btn-ghost" onclick="exportResults()">⬇️ Natijalarni CSV qilish</button></div>`;
+  document.getElementById('resultsContent').innerHTML = html;
+}
+
+function fitTag(v){
+  if(v>=0.7 && v<=1.3) return `<span class="fitflag fit-ok">${v.toFixed(2)}</span>`;
+  if(v>1.3) return `<span class="fitflag fit-hi">${v.toFixed(2)}</span>`;
+  return `<span class="fitflag fit-lo">${v.toFixed(2)}</span>`;
+}
+
+function renderItems(){
+  if(!lastResult) return;
+  const r = lastResult;
+  const items=[];
+  for(let i=0;i<r.I;i++){
+    const pct = r.icount[i]? (r.iscore[i]/r.icount[i]*100):0;
+    items.push({i,name:itemNames[i]||('S'+(i+1)),diff:r.b[i],se:r.iSE[i],
+      pct, correct:r.iscore[i], cnt:r.icount[i],
+      infit:r.itemFit[i].infit, outfit:r.itemFit[i].outfit});
+  }
+  const byDiff=[...items].sort((a,b)=>b.diff-a.diff);
+
+  // difficulty bar chart
+  let bars = '<div class="bar-chart">';
+  const maxAbs = Math.max(...items.map(x=>Math.abs(x.diff)),1);
+  byDiff.forEach(x=>{
+    const w = Math.abs(x.diff)/maxAbs*50;
+    const isHard = x.diff>=0;
+    const color = isHard? 'var(--amber)':'var(--steel)';
+    bars += `<div class="bar-item">
+      <div class="bar-label">${x.name}</div>
+      <div class="bar-track">
+        <div style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:#c5ccd5"></div>
+        <div class="bar-fill" style="position:absolute;${isHard?'left:50%':'right:50%'};width:${w}%;background:${color};${isHard?'':'justify-content:flex-end;padding-right:8px;padding-left:0'}">
+          ${x.diff>=0?'+':''}${x.diff.toFixed(2)}
+        </div>
+      </div>
+    </div>`;
+  });
+  bars += '</div>';
+
+  let html = `
+  <div class="card">
+    <h3>📏 Savollar qiyinlik darajasi (logit)</h3>
+    <p style="font-size:12.5px;color:var(--muted);margin-bottom:14px">O'ngga (sariq) — qiyin savollar (kam kishi yechgan, ko'p ball). Chapga (ko'k) — oson savollar (ko'p kishi yechgan, kam ball).</p>
+    ${bars}
+  </div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <div class="results-wrap">
+    <table class="results">
+      <thead><tr><th>Savol</th><th>To'g'ri javob</th><th>Yechgan %</th><th>Qiyinlik (logit)</th><th>Infit</th><th>Outfit</th><th>Holat</th></tr></thead>
+      <tbody>`;
+  byDiff.forEach(x=>{
+    let status, scls;
+    const bad = (x.infit>1.3||x.infit<0.7||x.outfit>1.3||x.outfit<0.7);
+    if(bad){status="Ko'rib chiqing";scls="fit-hi";}
+    else {status="Yaxshi";scls="fit-ok";}
+    html += `<tr>
+      <td><b>${x.name}</b></td>
+      <td class="num">${x.correct}/${x.cnt}</td>
+      <td class="num">${x.pct.toFixed(0)}%</td>
+      <td class="num">${x.diff>=0?'+':''}${x.diff.toFixed(2)} <span style="color:var(--muted);font-size:11px">±${x.se.toFixed(2)}</span></td>
+      <td class="num">${fitTag(x.infit)}</td>
+      <td class="num">${fitTag(x.outfit)}</td>
+      <td><span class="fitflag ${scls}">${status}</span></td>
+    </tr>`;
+  });
+  html += `</tbody></table></div></div>
+  <div class="note-amber">📌 <b>Infit/Outfit</b> — savol sifatining ko'rsatkichi. 0.7–1.3 oralig'i yaxshi. Bu chegaradan tashqaridagi savollar kutilmagan javob naqshiga ega (masalan, kuchli o'quvchilar xato qilgan oson savol) — ularni qayta ko'rib chiqish tavsiya etiladi.</div>`;
+  document.getElementById('itemsContent').innerHTML = html;
+}
+
+function renderWright(){
+  if(!lastResult) return;
+  const r = lastResult;
+  const allM = [...r.theta, ...r.b];
+  let lo=Math.min(...allM), hi=Math.max(...allM);
+  const pad=(hi-lo)*0.1||1; lo-=pad; hi+=pad;
+  const H=380;
+  const y = v => H - ((v-lo)/(hi-lo))*H;
+
+  // scale marks
+  let marks='';
+  for(let g=Math.ceil(lo);g<=Math.floor(hi);g++){
+    const yy=y(g)+44;
+    marks+=`<div class="scale-mark" style="top:${yy}px">${g>0?'+':''}${g}</div>`;
+  }
+  // person dots (right column)
+  let pdots='';
+  r.theta.forEach((th,p)=>{
+    pdots+=`<div class="wdot p" style="top:${y(th)+44}px" title="${personNames[p]}: ${th.toFixed(2)} logit">${personNames[p].split(' ')[0]}</div>`;
+  });
+  // item dots (left column)
+  let idots='';
+  r.b.forEach((bb,i)=>{
+    idots+=`<div class="wdot i" style="top:${y(bb)+44}px" title="${itemNames[i]}: ${bb.toFixed(2)} logit">${itemNames[i]}</div>`;
+  });
+
+  document.getElementById('wrightContent').innerHTML = `
+  <div class="card" style="padding:0;overflow:hidden">
+    <div class="wright" style="min-height:${H+70}px">
+      <div class="wright-col persons" style="position:relative">
+        <div class="wright-head">👥 O'quvchilar (qobiliyat)</div>
+        ${marks}
+        ${pdots}
+      </div>
+      <div class="wright-col items" style="position:relative">
+        <div class="wright-head">📝 Savollar (qiyinlik)</div>
+        ${idots}
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>🧭 Xaritani qanday o'qish kerak</h3>
+    <div class="kv">
+      <dt>Yuqorida</dt><dd>Kuchli o'quvchilar (chap) va qiyin savollar (o'ng)</dd>
+      <dt>Pastda</dt><dd>Kuchsiz o'quvchilar va oson savollar</dd>
+      <dt>Bir xil balandlik</dt><dd>O'quvchi qobiliyati savol qiyinligiga teng — u savolga 50% ehtimol bilan javob beradi</dd>
+    </div>
+    <div class="note-amber">💡 Agar barcha o'quvchilar savollardan baland turgan bo'lsa — test juda oson; aksincha bo'lsa — juda qiyin. Ideal holatda o'quvchilar va savollar bir-biriga mos taqsimlanadi.</div>
+  </div>`;
+}
+
+function exportResults(){
+  if(!lastResult) return;
+  const r=lastResult;
+  let rows=[];
+  for(let p=0;p<r.P;p++){
+    const ball=logitToBall(r.theta[p]); const [g]=gradeOf(ball);
+    rows.push({name:personNames[p]||('O\'quvchi'+(p+1)),raw:r.pscore[p],cnt:r.pcount[p],theta:r.theta[p],ball,g});
+  }
+  rows.sort((a,b)=>b.ball-a.ball);
+  let csv="O'quvchi,To'g'ri,Jami,Qobiliyat(logit),Ball,Daraja\n";
+  rows.forEach(x=>csv+=`${x.name},${x.raw},${x.cnt},${x.theta.toFixed(3)},${x.ball.toFixed(1)},${x.g}\n`);
+  const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download="rasch_natijalar.csv";a.click();
+}
+
+function buildLearn(){
+  document.getElementById('learnContent').innerHTML = `
+  <div class="learn-card">
+    <h3>📐 Rasch modeli nima?</h3>
+    <p>Rasch modeli (1960-yil, daniyalik olim <b>Georg Rasch</b>) — test natijalarini tahlil qiluvchi xalqaro psixometrik usul. O'zbekistonda Vazirlar Mahkamasining 2024-yil 10-yanvardagi 17-son qarori bilan Milliy sertifikat imtihonlari aynan shu metodika asosida hisoblanadi.</p>
+    <p style="margin-top:8px">Asosiy g'oya: <b>savolning qiyinligi unga necha kishi to'g'ri javob berganiga qarab aniqlanadi.</b> Kam o'quvchi yechgan qiyin savolga to'g'ri javob bergan o'quvchi ko'proq ball oladi; ko'pchilik yechgan oson savol kamroq ball beradi.</p>
+  </div>
+
+  <div class="learn-card">
+    <h3>🧮 Asosiy formula</h3>
+    <div class="formula">
+      P(to'g'ri) = e<sup>(θ − b)</sup> / (1 + e<sup>(θ − b)</sup>)
+      <div class="small" style="margin-top:8px">to'g'ri javob ehtimoli</div>
+    </div>
+    <dl class="kv">
+      <dt>θ (teta)</dt><dd>O'quvchining qobiliyati (logit shkalasida)</dd>
+      <dt>b</dt><dd>Savolning qiyinligi (logit shkalasida)</dd>
+      <dt>θ − b = 0</dt><dd>Qobiliyat qiyinlikka teng → ehtimol 50%</dd>
+      <dt>θ > b</dt><dd>O'quvchi qobiliyati yuqori → to'g'ri javob ehtimoli katta</dd>
+    </dl>
+  </div>
+
+  <div class="learn-card">
+    <h3>⚙️ Hisoblash bosqichlari (JMLE)</h3>
+    <div class="step-flow">
+      <div class="step"><div class="sn">1</div><div class="st"><b>Boshlang'ich baholash:</b> har o'quvchining to'g'ri javoblari va har savolning yechilish ulushidan dastlabki logitlar hisoblanadi.</div></div>
+      <div class="step"><div class="sn">2</div><div class="st"><b>Takroriy yaqinlashish:</b> o'quvchi qobiliyati (θ) va savol qiyinligi (b) bir-biriga moslab qayta-qayta hisoblanadi (Newton-Raphson usuli).</div></div>
+      <div class="step"><div class="sn">3</div><div class="st"><b>Markazlash:</b> savollar qiyinligining o'rtachasi 0 ga keltiriladi — bu shkalani barqaror qiladi.</div></div>
+      <div class="step"><div class="sn">4</div><div class="st"><b>Ballga aylantirish:</b> logit qiymat 100 ballik shkalaga o'tkaziladi va daraja beriladi.</div></div>
+      <div class="step"><div class="sn">5</div><div class="st"><b>Sifat nazorati:</b> Infit/Outfit statistikalari bilan savollar va o'quvchilar modelga mosligi tekshiriladi.</div></div>
+    </div>
+  </div>
+
+  <div class="learn-card">
+    <h3>🏅 Milliy sertifikat daraja chegaralari</h3>
+    <table class="gradetable">
+      <thead><tr><th>Ball</th><th>Daraja</th><th>Izoh</th></tr></thead>
+      <tbody>
+        <tr><td>70 dan yuqori</td><td><span class="badge g-Ap">A+</span></td><td>Eng yuqori — fandan maksimal ball</td></tr>
+        <tr><td>65 – 69,9</td><td><span class="badge g-A">A</span></td><td>Maksimal ball</td></tr>
+        <tr><td>60 – 64,9</td><td><span class="badge g-Bp">B+</span></td><td>Proporsional ball</td></tr>
+        <tr><td>55 – 59,9</td><td><span class="badge g-B">B</span></td><td>Proporsional ball</td></tr>
+        <tr><td>50 – 54,9</td><td><span class="badge g-Cp">C+</span></td><td>Proporsional ball</td></tr>
+        <tr><td>46 – 49,9</td><td><span class="badge g-C">C</span></td><td>Eng past sertifikat darajasi</td></tr>
+        <tr><td>46 dan past</td><td><span class="badge g-none">—</span></td><td>Sertifikat berilmaydi</td></tr>
+      </tbody>
+    </table>
+    <div class="note-amber">
+      ⚠️ <b>Muhim:</b> Bu dastur Rasch modelining haqiqiy printsipida ishlaydi va o'quv-mashq uchun mo'ljallangan. UzBMB'ning rasmiy bali maxsus (e'lon qilinmagan) kalibrlash formulasi bilan hisoblanadi, shuning uchun bu yerdagi ball rasmiy natijaga <b>yaqin, lekin aynan teng bo'lmasligi mumkin.</b> "Natijalar" bo'limidagi shkala sozlamalari orqali real natijalarga moslashtirish mumkin.
+    </div>
+  </div>
+
+  <div class="learn-card">
+    <h3>📊 Infit va Outfit — sifat ko'rsatkichlari</h3>
+    <p>Bu statistikalar test natijalarining modelga qanchalik mos kelishini ko'rsatadi. Ideal qiymat — <b>1.0</b>, qabul qilinadigan oraliq — <b>0.7–1.3</b>.</p>
+    <dl class="kv">
+      <dt>Outfit</dt><dd>Kutilmagan javoblarga sezgir (masalan, kuchli o'quvchining oson savolда xato qilishi)</dd>
+      <dt>Infit</dt><dd>Umumiy javob naqshiga sezgir, ishonchliroq ko'rsatkich</dd>
+      <dt>> 1.3</dt><dd>Savol "shovqinli" — kutilmagan javoblar ko'p</dd>
+      <dt>< 0.7</dt><dd>Savol "juda mos" — ortiqcha bashoratli (kam ma'lumot beradi)</dd>
+    </dl>
+  </div>`;
+}
+
+</script>
+<script>
+// ============================================================
+// COURSERA RASCH — UI mantiq
+// ============================================================
+let matrixData = [];   // [person][item] of "1"/"0"/""
+let personNames = [];
+let itemNames = [];
+let lastResult = null;
+let scaleK = 9.5, scaleC = 50;
+
+// ---- Ruler motif ----
+(function(){
+  const r = document.getElementById('ruler');
+  let h = '';
+  for (let i=0;i<120;i++) h += '<i></i>';
+  r.innerHTML = h;
+})();
+
+// ---- Navigation ----
+function nav(id, el){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(el) el.classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ---- Matrix build ----
+function buildMatrix(){
+  const t = document.getElementById('matrix');
+  const P = matrixData.length, I = P? matrixData[0].length : 0;
+  let html = '<thead><tr><th class="corner">O\'quvchi \\ Savol</th>';
+  for(let i=0;i<I;i++){
+    html += `<th class="itemhead"><input value="${itemNames[i]||('S'+(i+1))}" onchange="itemNames[${i}]=this.value" title="Savol nomi"></th>`;
+  }
+  html += '<th style="min-width:30px"></th></tr></thead><tbody>';
+  for(let p=0;p<P;p++){
+    html += `<tr><th class="namecol"><input value="${personNames[p]||('O\'quvchi '+(p+1))}" onchange="personNames[${p}]=this.value"></th>`;
+    for(let i=0;i<I;i++){
+      const v = matrixData[p][i];
+      const cls = v==="1"?"v1":(v==="0"?"v0":"");
+      html += `<td><input class="cell ${cls}" data-p="${p}" data-i="${i}" value="${v}" maxlength="1"
+        onfocus="this.select()" onkeydown="cellKey(event,${p},${i})" oninput="cellInput(this,${p},${i})"></td>`;
+    }
+    html += `<td><span class="rowdel" onclick="delRow(${p})" title="O'chirish">✕</span></td>`;
+  }
+  html += '</tbody>';
+  t.innerHTML = html;
+}
+
+function cellInput(el,p,i){
+  let v = el.value.trim();
+  if(v!=="0" && v!=="1") v="";
+  matrixData[p][i]=v;
+  el.value=v;
+  el.className = "cell "+(v==="1"?"v1":(v==="0"?"v0":""));
+}
+function cellKey(e,p,i){
+  const I = matrixData[0].length, P = matrixData.length;
+  if(e.key==="1"||e.key==="0"){
+    matrixData[p][i]=e.key;
+    e.target.value=e.key;
+    e.target.className="cell "+(e.key==="1"?"v1":"v0");
+    e.preventDefault();
+    focusCell(p, i+1<I? i+1 : i, i+1<I? p : (p+1<P?p+1:p), i+1<I?null:0);
+    if(i+1<I) focusCell(p,i+1); else if(p+1<P) focusCell(p+1,0);
+    return;
+  }
+  let np=p, ni=i;
+  if(e.key==="ArrowRight"){ni=Math.min(i+1,I-1);e.preventDefault();}
+  else if(e.key==="ArrowLeft"){ni=Math.max(i-1,0);e.preventDefault();}
+  else if(e.key==="ArrowDown"){np=Math.min(p+1,P-1);e.preventDefault();}
+  else if(e.key==="ArrowUp"){np=Math.max(p-1,0);e.preventDefault();}
+  else if(e.key==="Backspace"||e.key==="Delete"){matrixData[p][i]="";e.target.value="";e.target.className="cell";}
+  else return;
+  focusCell(np,ni);
+}
+function focusCell(p,i){
+  const c = document.querySelector(`.cell[data-p="${p}"][data-i="${i}"]`);
+  if(c) c.focus();
+}
+
+function resizeMatrix(){
+  const P = Math.max(1,Math.min(300, +document.getElementById('nP').value||10));
+  const I = Math.max(1,Math.min(120, +document.getElementById('nI').value||12));
+  const old = matrixData, oldNames=personNames, oldItems=itemNames;
+  matrixData = [];
+  for(let p=0;p<P;p++){
+    const row=[];
+    for(let i=0;i<I;i++) row.push((old[p]&&old[p][i]!==undefined)?old[p][i]:"");
+    matrixData.push(row);
+  }
+  personNames = []; itemNames=[];
+  for(let p=0;p<P;p++) personNames.push(oldNames[p]||('O\'quvchi '+(p+1)));
+  for(let i=0;i<I;i++) itemNames.push(oldItems[i]||('S'+(i+1)));
+  buildMatrix();
+}
+function delRow(p){
+  if(matrixData.length<=1) return;
+  matrixData.splice(p,1); personNames.splice(p,1);
+  document.getElementById('nP').value = matrixData.length;
+  buildMatrix();
+}
+function clearMatrix(){
+  for(let p=0;p<matrixData.length;p++)
+    for(let i=0;i<matrixData[p].length;i++) matrixData[p][i]="";
+  buildMatrix();
+  lastResult=null;
+}
+
+// ---- Sample data (realistic Rasch pattern) ----
+function loadSample(){
+  const names = ["Aliyev Sardor","Karimova Nilufar","Tosheva Madina","Rahimov Jasur","Yo'ldosheva Sevara",
+    "Bekov Aziz","Qodirova Dilnoza","Ergashev Bobur","Soliyeva Ozoda","Nazarov Akmal",
+    "Husanova Malika","Tursunov Diyor","Abdullayeva Sabina","Mirzayev Otabek","Kamolova Zarina"];
+  const P=15, I=14;
+  document.getElementById('nP').value=P;
+  document.getElementById('nI').value=I;
+  // item difficulties (easy -> hard), person abilities
+  const itemDiff = [-2.2,-1.8,-1.4,-1.0,-0.6,-0.3,0.0,0.4,0.8,1.1,1.5,1.9,2.3,2.8];
+  const ability = [2.4,1.9,1.5,1.2,0.9,0.6,0.3,0.0,-0.3,-0.6,-0.9,-1.3,-1.7,-2.0,-2.4];
+  matrixData=[]; personNames=[]; itemNames=[];
+  // deterministic pseudo-random for reproducible sample
+  let seed=12345;
+  const rnd=()=>{seed=(seed*9301+49297)%233280;return seed/233280;};
+  for(let p=0;p<P;p++){
+    const row=[];
+    for(let i=0;i<I;i++){
+      const pr=1/(1+Math.exp(-(ability[p]-itemDiff[i])));
+      row.push(rnd()<pr?"1":"0");
+    }
+    matrixData.push(row);
+    personNames.push(names[p]);
+  }
+  for(let i=0;i<I;i++) itemNames.push("S"+(i+1));
+  buildMatrix();
+  showToast("Namuna yuklandi: 15 o'quvchi, 14 savol");
+}
+
+function showToast(msg){
+  let t=document.getElementById('toast');
+  if(!t){t=document.createElement('div');t.id='toast';
+    t.style.cssText='position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 20px;border-radius:9px;font-size:13px;z-index:100;box-shadow:0 6px 20px rgba(0,0,0,.25);transition:opacity .3s';
+    document.body.appendChild(t);}
+  t.textContent=msg; t.style.opacity='1';
+  clearTimeout(t._tm); t._tm=setTimeout(()=>t.style.opacity='0',2200);
+}
+
+// ---- CSV ----
+function exportCSV(){
+  let csv = "O'quvchi,"+itemNames.join(",")+"\n";
+  for(let p=0;p<matrixData.length;p++)
+    csv += (personNames[p]||('O\'quvchi'+(p+1)))+","+matrixData[p].join(",")+"\n";
+  const blob = new Blob([csv],{type:"text/csv;charset=utf-8"});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download="rasch_malumot.csv"; a.click();
+}
+function importCSV(e){
+  const file=e.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    const lines=ev.target.result.split(/\r?\n/).filter(l=>l.trim());
+    if(lines.length<2){showToast("CSV bo'sh yoki noto'g'ri");return;}
+    const header=lines[0].split(",");
+    itemNames=header.slice(1).map(s=>s.trim());
+    matrixData=[]; personNames=[];
+    for(let r=1;r<lines.length;r++){
+      const parts=lines[r].split(",");
+      personNames.push(parts[0].trim());
+      matrixData.push(parts.slice(1).map(v=>{v=v.trim();return (v==="1"||v==="0")?v:"";}));
+    }
+    document.getElementById('nP').value=matrixData.length;
+    document.getElementById('nI').value=itemNames.length;
+    buildMatrix();
+    showToast("CSV import qilindi: "+matrixData.length+" o'quvchi");
+  };
+  reader.readAsText(file);
+  e.target.value="";
+}
+
+// ---- Scale / grade ----
+function logitToBall(theta){ return Math.max(0,Math.min(100, scaleC + scaleK*theta)); }
+function gradeOf(ball){
+  if(ball>70) return ["A+","g-Ap"];
+  if(ball>=65) return ["A","g-A"];
+  if(ball>=60) return ["B+","g-Bp"];
+  if(ball>=55) return ["B","g-B"];
+  if(ball>=50) return ["C+","g-Cp"];
+  if(ball>=46) return ["C","g-C"];
+  return ["—","g-none"];
+}
+function updateScale(){
+  scaleK = +document.getElementById('scaleK').value;
+  scaleC = +document.getElementById('scaleC').value;
+  document.getElementById('scaleKval').textContent=scaleK;
+  document.getElementById('scaleCval').textContent=scaleC;
+  if(lastResult) renderResults();
+}
+
+// ---- Run ----
+function runAnalysis(){
+  // validate: any data?
+  let any=false;
+  for(const row of matrixData) for(const v of row) if(v==="1"||v==="0"){any=true;break;}
+  if(!any){ showToast("Avval ma'lumot kiriting yoki namuna yuklang"); return; }
+  const R = matrixData.map(row=>row.map(v=>(v==="1"||v==="0")?+v:null));
+  try{
+    lastResult = RaschEngine.analyze(R);
+    renderResults(); renderItems(); renderWright();
+    showToast("Tahlil tayyor — "+lastResult.iters+" iteratsiya");
+    nav('results', document.querySelectorAll('.nav button')[1]);
+  }catch(err){
+    showToast("Xato: "+err.message);
+    console.error(err);
+  }
+}
+
+// init
+resizeMatrix();
+buildLearn();
+
+</script>
+</body>
+</html>
